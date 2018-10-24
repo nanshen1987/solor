@@ -1,0 +1,37 @@
+function g = Gravity_ECEF_Complex(r_eb_e)
+ g = [0;0;0];
+ a = 6378338;
+ GM = 3986329 * (1e8);
+ J2 = 0.001092;
+ J4 = -2.43*(1e-6);
+ J6 = 6.31571*(1e-9);
+ w = 7.29211511*(1e-5);
+ omega_ie = 7.292115E-5;  % Earth rotation rate (rad/s)
+ r = sqrt((r_eb_e(1))^2 + (r_eb_e(2))^2 + (r_eb_e(3))^2);
+ a1 = -GM / r^ 2;
+ a_div_r2 = (a / r)^2;
+ a_div_r4= (a / r)^4;
+ a_div_r6 = (a / r)^6;
+ a2 = 1 + 1.5 * J2*a_div_r2 - 15.0 / 8 * J4*a_div_r4 + 35 / 16.0*J6*a_div_r6;
+ a3 = -4.5*J2*a_div_r2 + 75 / 4.0*J4*a_div_r4 - 735.0 / 16 * J6*a_div_r6;
+ a4 = -175.0 / 8 * J4*a_div_r4 + 2205 / 16.0*J6*a_div_r6;
+ a5 = -1617.0 / 16 * J6*a_div_r6;
+ b1 = 3 * J2*a_div_r2 - 15 / 2.0*J4*a_div_r4 + 105.0 / 8 * J6*a_div_r6;
+ b2 = 35.0 / 2 * J4*a_div_r4 - 945.0 / 12 * J6*a_div_r6;
+ b3 = 693.0 / 8 * J6*a_div_r6;
+ c1 = a2;
+ c2 = a3 - b1;
+ c3 = a4 - b2;
+ c4 = a5 - b3;
+ d1 = a2 + b1;
+ d2 = c2 + b2;
+ d3 = c3 + b3;
+ d4 = c4;
+
+ t_2 = (r_eb_e(3))^2 / ((r_eb_e(1))^2+ (r_eb_e(2)^2)+ (r_eb_e(3))^2);
+ t_4 = t_2^2;
+ t_6 = t_2^3;
+
+g(1) = a1 / r*(c1 + c2*t_2 + c3*t_4 + c4*t_6)*r_eb_e(1) + omega_ie^2*r_eb_e(1);
+g(2)=a1/r*(c1 + c2*t_2 + c3*t_4 + c4*t_6)*r_eb_e(2) + omega_ie^2*r_eb_e(2);
+g(3) = a1 / r*(d1 + d2*t_2 + d3*t_4 + d4*t_6)*r_eb_e(3);
