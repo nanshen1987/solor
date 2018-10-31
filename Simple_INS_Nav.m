@@ -81,9 +81,10 @@ cbes(1,2)=roll;
 cbes(1,3)=yaw;
 [L_b,lambda_b,h_b,v_eb_n,C_b_n] = (ECEF_to_NED(preRbeXYZ,preVbe,prCbe));
 cbes(1,:)=CTM_to_Euler([0,1,0;1,0,0;0,0,1]*C_b_n)';
-ZVPT_THREDHOLD=0.1;
-ZVPT_WINDOW=10;
-
+ZVPT_THREDHOLD=0.5;
+ZVPT_WINDOW=20;
+C_B_E_S=zeros(no_epochs,9);
+C_B_E_S(1,:)=reshape(prCbe,1,9);
 idz=ZVPT_WINDOW;
 %µü´ú
 for epoch = 2:no_epochs
@@ -106,12 +107,15 @@ for epoch = 2:no_epochs
         preVbe,prCbe,f_ib_b,omega_ib_b);
      ckvbe(epoch,:)=v_eb_e';
      rbeXYZs(epoch,:)=r_eb_e';
+     C_B_E_S(epoch,:)=reshape(C_b_e,1,9);
      if epoch>idz
          vel_m=mean(ckvbe(epoch-idz:epoch,:));
          if(norm(vel_m)<=ZVPT_THREDHOLD)
              rbeXYZs(epoch,:)=mean(rbeXYZs(epoch-idz:epoch,:))';
              r_eb_e= rbeXYZs(epoch,:)';
-             ckvbe(epoch,:)=vel_m';
+             C_B_E_S(epoch,:)=mean(C_B_E_S(epoch-idz:epoch,:))';
+             C_b_e=reshape(C_B_E_S(epoch,:),3,3);
+%              ckvbe(epoch,:)=vel_m';
 %              v_eb_e=ckvbe(epoch,:)';
          end
      end
