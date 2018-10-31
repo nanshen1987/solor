@@ -81,11 +81,14 @@ cbes(1,2)=roll;
 cbes(1,3)=yaw;
 [L_b,lambda_b,h_b,v_eb_n,C_b_n] = (ECEF_to_NED(preRbeXYZ,preVbe,prCbe));
 cbes(1,:)=CTM_to_Euler([0,1,0;1,0,0;0,0,1]*C_b_n)';
+
 ZVPT_THREDHOLD=0.5;
 ZVPT_WINDOW=20;
 C_B_E_S=zeros(no_epochs,9);
 C_B_E_S(1,:)=reshape(prCbe,1,9);
 idz=ZVPT_WINDOW;
+
+
 %迭代
 for epoch = 2:no_epochs
     ws = obsdata(epoch,1);
@@ -97,7 +100,7 @@ for epoch = 2:no_epochs
     acceZ = obsdata(epoch,7);
     %时间间隔
     tor_i=ws-preWs;
-    
+
     %比力
     f_ib_b=[acceX,acceY,acceZ]';
     %旋转角
@@ -105,6 +108,7 @@ for epoch = 2:no_epochs
     %状态更新
     [r_eb_e,v_eb_e,C_b_e] = Nav_equations_ECEF(tor_i,preRbeXYZ,...
         preVbe,prCbe,f_ib_b,omega_ib_b);
+
      ckvbe(epoch,:)=v_eb_e';
      rbeXYZs(epoch,:)=r_eb_e';
      C_B_E_S(epoch,:)=reshape(C_b_e,1,9);
@@ -125,7 +129,7 @@ for epoch = 2:no_epochs
     preRbeXYZ=r_eb_e;
     preVbe=v_eb_e;
     prCbe=C_b_e;
-    
+
     
     
     %更新
@@ -133,8 +137,17 @@ for epoch = 2:no_epochs
 
 
 
+
    
     vbe(epoch,:)=([0,1,0;1,0,0;0,0,-1]*v_eb_n)';
+
+    preWs=ws;
+    preRbeXYZ=r_eb_e;
+    preVbe=v_eb_e;
+    prCbe=C_b_e;
+    vbe(epoch,:)=([0,1,0;1,0,0;0,0,-1]*v_eb_n)';
+    rbeXYZs(epoch,:)=preRbeXYZ';
+
    cbes(epoch,:)=CTM_to_Euler([0,1,0;1,0,0;0,0,1]*C_b_n)';
 end
 
